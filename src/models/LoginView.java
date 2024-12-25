@@ -3,8 +3,12 @@ package models;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
+import java.util.regex.Pattern;
 
 public class LoginView {
+
+    private static final String PASSWORD_REGEX = "^(?=.*[A-Z])(?=.*[a-z])(?=.*\\d)(?=.*[!@#$%^&*(),.?\":{}|<>]).{8,}$";
+
     public void showLogin() {
         JFrame frame = new JFrame("Library Management System");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -60,10 +64,14 @@ public class LoginView {
 
             if (username.isEmpty() || password.isEmpty()) {
                 JOptionPane.showMessageDialog(frame, "Username and Password cannot be empty!");
-            } else if (UserFactory.registerUser(username, password, type)) {
-                JOptionPane.showMessageDialog(frame, "Registration successful!");
+            } else if (!Pattern.matches(PASSWORD_REGEX, password)) {
+                JOptionPane.showMessageDialog(frame, "Password must contain at least one uppercase letter, one lowercase letter, one digit, one special character, and be at least 8 characters long.");
             } else {
-                JOptionPane.showMessageDialog(frame, "User already exists! Please choose another username.");
+                if (UserFactory.registerUser(username, password, type)) {
+                    JOptionPane.showMessageDialog(frame, "Registration successful!");
+                } else {
+                    JOptionPane.showMessageDialog(frame, "User already exists! Please choose another username.");
+                }
             }
         });
 

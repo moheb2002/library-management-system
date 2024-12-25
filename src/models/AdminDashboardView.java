@@ -3,7 +3,6 @@ package models;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
-import java.util.List;
 
 public class AdminDashboardView {
     private final String adminUsername;
