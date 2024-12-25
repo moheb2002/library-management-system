@@ -1,12 +1,18 @@
 package models;
 
-import database.DatabaseConnection;
+import database.Database;
+import database.DatabaseProxy;
 
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
 public class BookManager {
+
+    private static final Database database = new DatabaseProxy();
 
     public static List<String> getAllBooks() {
         String query = "SELECT title FROM books";
@@ -25,7 +31,7 @@ public class BookManager {
         }
 
         String query = "INSERT INTO borrowed_books (user_username, book_title, borrow_date) VALUES (?, ?, CURRENT_DATE)";
-        try (Connection connection = DatabaseConnection.getInstance().getConnection();
+        try (Connection connection = database.getConnection();
              PreparedStatement stmt = connection.prepareStatement(query)) {
 
             stmt.setString(1, username);
@@ -39,28 +45,26 @@ public class BookManager {
         }
     }
 
-    
-public static boolean addBook(String title, String author, String category) {
-    String query = "INSERT INTO books (title, author, category) VALUES (?, ?, ?)";
+    public static boolean addBook(String title, String author, String category) {
+        String query = "INSERT INTO books (title, author, category) VALUES (?, ?, ?)";
+        try (Connection connection = database.getConnection();
+             PreparedStatement stmt = connection.prepareStatement(query)) {
 
-    try (Connection connection = DatabaseConnection.getInstance().getConnection();
-         PreparedStatement stmt = connection.prepareStatement(query)) {
+            stmt.setString(1, title);
+            stmt.setString(2, author);
+            stmt.setString(3, category);
 
-        stmt.setString(1, title);
-        stmt.setString(2, author);
-        stmt.setString(3, category);
+            return stmt.executeUpdate() > 0;
 
-        return stmt.executeUpdate() > 0;
-
-    } catch (SQLException e) {
-        System.err.println("Error adding book: " + e.getMessage());
-        return false;
+        } catch (SQLException e) {
+            System.err.println("Error adding book: " + e.getMessage());
+            return false;
+        }
     }
-}
 
     private static List<String> fetchBooks(String query, String username) {
         List<String> books = new ArrayList<>();
-        try (Connection connection = DatabaseConnection.getInstance().getConnection();
+        try (Connection connection = database.getConnection();
              PreparedStatement stmt = connection.prepareStatement(query)) {
 
             if (username != null) stmt.setString(1, username);
@@ -78,7 +82,7 @@ public static boolean addBook(String title, String author, String category) {
 
     private static boolean isBookAvailable(String bookTitle) {
         String query = "SELECT COUNT(*) FROM books WHERE title = ?";
-        try (Connection connection = DatabaseConnection.getInstance().getConnection();
+        try (Connection connection = database.getConnection();
              PreparedStatement stmt = connection.prepareStatement(query)) {
 
             stmt.setString(1, bookTitle);
